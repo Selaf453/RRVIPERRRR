@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Островок</title>
+<style>
+:root { --ink:#0a0a0d; --gold:#ffd34d; --accent:#ff8a3d; --dim:#9a9db5; --line:#262a3f; color-scheme: dark; }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; height:100%; background:#14162b; color:#f2f3f8; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; overflow:hidden; }
+body { background:linear-gradient(160deg,#1a1d3d 0%,#3a2b5e 55%,#6a3f72 100%); }
+.hint { position:absolute; left:0; right:0; top:46%; text-align:center; color:#ffffff99; font-size:17px; padding:0 30px; line-height:1.5; transition:opacity .4s; }
+.hint b { display:block; font-size:34px; color:#fff; margin-bottom:10px; }
+body.busy .hint { opacity:0; }
+
+/* ── остров ── */
+#isl { --w:150px; --h:44px; position:absolute; left:50%; top:calc(10px + env(safe-area-inset-top)); transform:translateX(-50%);
+  width:var(--w); height:var(--h); background:var(--ink); border-radius:22px; overflow:hidden;
+  box-shadow:0 10px 30px #0008; border:1px solid #ffffff17;
+  transition:width .45s cubic-bezier(.2,.9,.3,1.08), height .45s cubic-bezier(.2,.9,.3,1.08), border-radius .45s, top .3s; }
+#isl.toast { --w:min(94vw,430px); --h:74px; border-radius:30px; }
+#isl.open  { --w:min(96vw,450px); --h:min(84vh,640px); border-radius:30px; }
+#isl.buzz { animation:buzz .09s linear 6; }
+@keyframes buzz { 0%{transform:translateX(-50%) translateX(-4px)} 50%{transform:translateX(-50%) translateX(4px)} 100%{transform:translateX(-50%)} }
+/* стили */
+#isl.s-rounded { border-radius:14px; } #isl.s-rounded.toast,#isl.s-rounded.open { border-radius:20px; }
+#isl.s-notch { top:0; border-radius:0 0 24px 24px; border-top:0; } #isl.s-notch.toast,#isl.s-notch.open { border-radius:0 0 30px 30px; }
+#isl.s-glass { background:#1c2030b8; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:1.5px solid #ffffff66; }
+#isl.s-neon { border:2px solid #ffaa64; box-shadow:0 0 6px #ff8a3d, 0 0 22px #ff8a3d88, inset 0 0 8px #ff8a3d44; }
+
+.bar { position:absolute; left:0; right:0; top:0; height:44px; display:flex; align-items:center; justify-content:center; gap:10px; transition:opacity .2s; }
+#isl.toast .bar, #isl.open .bar { opacity:0; pointer-events:none; }
+#clock { font-weight:800; font-size:15px; font-variant-numeric:tabular-nums; }
+.eyes { display:flex; gap:7px; transition:transform .12s; }
+.eyes i { display:block; width:11px; height:15px; background:#fff; border-radius:50%; position:relative; animation:blink 4.2s infinite; }
+.eyes i::after { content:""; position:absolute; width:6px; height:7px; background:var(--ink); border-radius:50%; left:calc(2.5px + var(--lx,0)*2px); top:calc(4px + var(--ly,0)*2px); }
+.eyes.big { gap:13px; } .eyes.big i { width:22px; height:30px; } .eyes.big i::after { width:11px; height:14px; left:calc(5.5px + var(--lx,0)*4px); top:calc(8px + var(--ly,0)*4px); }
+@keyframes blink { 0%,94%,100%{transform:scaleY(1)} 97%{transform:scaleY(.1)} }
+.eyes.happy i { height:7px !important; background:none; border-top:4px solid #fff; border-radius:50% 50% 0 0; animation:none; } .eyes.happy i::after { display:none; }
+.eyes.sleepy i { height:6px; animation:none; } .eyes.sleepy i::after { display:none; }
+.eyes.love i { background:none; animation:none; font-style:normal; width:auto; height:auto; line-height:1; } .eyes.love i::after { content:"❤"; color:#ff6b8b; background:none; position:static; width:auto; height:auto; font-size:17px; }
+.eyes.wow i { transform:scaleY(1.2); animation:none; }
+
+.toastc { position:absolute; inset:0; display:flex; align-items:center; gap:12px; padding:0 16px; opacity:0; pointer-events:none; transition:opacity .25s; }
+#isl.toast .toastc { opacity:1; transition-delay:.18s; }
+.ti { flex:none; width:42px; height:42px; border-radius:50%; display:grid; place-items:center; font-size:22px; background:var(--tc,#a78bfa); }
+.tt { min-width:0; flex:1; } .tt b { display:block; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .tt span { display:block; font-size:13px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+.tprog { position:absolute; left:20px; right:20px; bottom:5px; height:3px; background:var(--tc,#a78bfa); opacity:.55; border-radius:2px; transform-origin:left; }
+
+.panel { position:absolute; inset:0; display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:opacity .25s; }
+#isl.open .panel { opacity:1; pointer-events:auto; transition-delay:.2s; }
+.head { display:flex; align-items:center; gap:12px; padding:16px 16px 8px; }
+.head h1 { margin:0; font-size:19px; flex:1; } .head p { margin:2px 0 0; font-size:13px; color:var(--dim); font-weight:500; }
+button { font:inherit; color:inherit; border:0; background:#ffffff14; border-radius:14px; padding:0 14px; min-height:44px; cursor:pointer; }
+button:active { background:#ffffff2a; }
+.x { width:44px; padding:0; font-size:20px; }
+.tabs { display:flex; gap:8px; padding:6px 16px 10px; }
+.tabs button { flex:1; font-weight:700; } .tabs button.on { background:var(--accent); color:#1c0f05; }
+.body { flex:1; overflow-y:auto; padding:0 16px 16px; -webkit-overflow-scrolling:touch; }
+.body::-webkit-scrollbar { display:none; }
+.sec { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); font-weight:800; margin:14px 2px 8px; }
+.hw { display:flex; align-items:center; gap:10px; background:#ffffff0f; border-radius:16px; padding:10px 10px 10px 14px; margin-bottom:8px; }
+.hw .dot { width:10px; height:10px; border-radius:50%; flex:none; }
+.hw .m { flex:1; min-width:0; } .hw .m b { display:block; font-size:15px; } .hw .m span { display:block; font-size:14px; color:#d9dbe8; margin-top:1px; overflow-wrap:anywhere; }
+.hw .when { font-size:12px; font-weight:800; padding:4px 9px; border-radius:20px; background:#ffffff1f; flex:none; }
+.hw .when.late { background:#f8717133; color:#fca5a5; } .hw .when.today { background:#fb923c33; color:#fdba74; }
+.hw .ok,.hw .del { width:42px; min-height:42px; padding:0; flex:none; font-size:18px; } .hw .ok { background:#4ade8026; color:#86efac; } .hw .del { background:none; color:var(--dim); }
+.hw.done { opacity:.5; } .hw.done .m span { text-decoration:line-through; }
+.empty { text-align:center; color:var(--dim); padding:30px 10px; line-height:1.5; }
+.form { background:#ffffff0c; border-radius:18px; padding:12px; display:flex; flex-direction:column; gap:8px; }
+input[type=text],input[type=date],input[type=number] { font:inherit; color:#fff; background:#0a0a0d; border:1px solid #2d3150; border-radius:12px; padding:0 12px; min-height:46px; width:100%; }
+input:focus { outline:2px solid var(--gold); outline-offset:1px; }
+.chips { display:flex; gap:8px; flex-wrap:wrap; } .chips button { flex:1; min-width:70px; font-size:14px; font-weight:700; } .chips button.on { background:#3a3150; box-shadow:inset 0 0 0 2px var(--gold); }
+.add { background:var(--accent); color:#1c0f05; font-weight:800; }
+.row { display:flex; align-items:center; gap:12px; background:#ffffff0f; border-radius:16px; padding:10px 14px; margin-bottom:8px; min-height:56px; } .row .l { flex:1; } .row .l b { display:block; font-size:15px; } .row .l span { font-size:12px; color:var(--dim); }
+.sw { width:52px; height:30px; border-radius:15px; background:#ffffff26; position:relative; flex:none; padding:0; min-height:30px; } .sw::after { content:""; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff; transition:left .2s; } .sw.on { background:var(--accent); } .sw.on::after { left:25px; }
+.row input[type=number] { width:84px; text-align:center; }
+.st { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; } .st button { padding:0; font-size:12px; font-weight:700; min-height:62px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; } .st button.on { box-shadow:inset 0 0 0 2px var(--accent); background:#ff8a3d22; }
+.st i { width:34px; height:11px; background:#000; border:1px solid #ffffff33; border-radius:6px; display:block; } .st i.rounded{border-radius:3px} .st i.notch{border-radius:0 0 7px 7px;border-top:0} .st i.glass{background:#555e80aa;border-color:#fff8} .st i.neon{border-color:#ff8a3d;box-shadow:0 0 6px #ff8a3d}
+.test { display:flex; gap:8px; margin-top:4px; } .test button { flex:1; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="hint"><b>Островок</b>Нажми на остров сверху: там домашка и настройки.<br>Он напомнит про перерыв и про задания на сегодня.</div>
+
+<div id="isl" role="button" aria-label="Островок">
+  <div class="bar"><div class="eyes" id="eyesBar"><i></i><i></i></div><span id="clock">--:--</span></div>
+  <div class="toastc"><div class="ti" id="tIcon">🔔</div><div class="tt"><b id="tTitle"></b><span id="tSub"></span></div><div class="eyes" id="eyesT"><i></i><i></i></div><div class="tprog" id="tProg"></div></div>
+  <div class="panel" id="panel">
+    <div class="head"><div class="eyes big" id="eyesP"><i></i><i></i></div><div style="flex:1;padding-left:6px"><h1 id="pTitle">Островок</h1><p id="pSub"></p></div><button class="x" id="closeBtn" aria-label="Закрыть">✕</button></div>
+    <div class="tabs"><button id="tabHw" class="on">Домашка</button><button id="tabSet">Настройки</button></div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const isl = $("isl");
+const DEF = { hw: [], set: { sound: true, vibro: true, breakMin: 45, hourly: true, style: "pill" }, lastHw: 0, seen: 0 };
+let S;
+try { S = JSON.parse(localStorage.getItem("ostrovok") || "null") || DEF; } catch (e) { S = DEF; }
+S.set = Object.assign({}, DEF.set, S.set || {}); S.hw = Array.isArray(S.hw) ? S.hw : [];
+const save = () => { try { localStorage.setItem("ostrovok", JSON.stringify(S)); } catch (e) {} };
+
+/* ── время и даты ── */
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+const addDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return ymd(d); };
+const diffDays = s => { const a = new Date(s + "T00:00:00"), b = new Date(ymd(new Date()) + "T00:00:00"); return Math.round((a - b) / 864e5); };
+function dueInfo(s) {
+  const k = diffDays(s);
+  if (k < 0) return ["просрочено", "late"]; if (k === 0) return ["сегодня", "today"]; if (k === 1) return ["завтра", ""];
+  const p = s.split("-"); return [p[2] + "." + p[1], ""];
+}
+const dueNow = () => S.hw.filter(h => !h.done && diffDays(h.due) <= 0);
+
+/* ── звук и вибро ── */
+let actx = null;
+function audio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (actx && actx.state === "suspended") actx.resume(); return actx; }
+function tone(f, d, type, v, w, flat) {
+  if (!actx || !S.set.sound) return; const t = actx.currentTime + (w || 0), o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || "sine"; o.frequency.value = f; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v || .2, t + .006);
+  if (flat) { g.gain.setValueAtTime(v || .2, t + d - .03); g.gain.linearRampToValueAtTime(0, t + d); } else g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g).connect(actx.destination); o.start(t); o.stop(t + d + .02);
+}
+const SND = {
+  pop() { tone(520, .09, "sine", .18); tone(780, .09, "sine", .14, .05); },
+  ding() { tone(988, .14, "sine", .2); tone(1319, .35, "sine", .22, .12); },
+  buzz() { for (let i = 0; i < 3; i++) { tone(168, .2, "sawtooth", .13, i * .27, true); tone(336, .2, "triangle", .06, i * .27, true); } },
+  hw() { [659, 784, 988].forEach((f, i) => tone(f, .2, "sine", .15, i * .15)); tone(1319, .4, "sine", .17, .5); },
+  done() { tone(784, .1, "sine", .16); tone(1175, .25, "sine", .18, .09); },
+  tick() { tone(1200, .05, "triangle", .1); },
+};
+function vib(p) {
+  if (!S.set.vibro) return;
+  try { if (window.Android && Android.vibrate) { Android.vibrate(p.join(",")); return; } } catch (e) {}
+  try { navigator.vibrate && navigator.vibrate(p); } catch (e) {}
+}
+const BUZZ = [0, 200, 70, 200, 70, 200];
+
+/* ── глаза ── */
+const eyeEls = [$("eyesBar"), $("eyesT"), $("eyesP")];
+function mood(m) { eyeEls.forEach(e => { e.classList.remove("happy", "sleepy", "love", "wow"); if (m && m !== "neutral") e.classList.add(m); }); }
+function look(x, y) { eyeEls.forEach(e => e.querySelectorAll("i").forEach(i => { i.style.setProperty("--lx", x); i.style.setProperty("--ly", y); })); }
+addEventListener("pointermove", e => look(Math.max(-1, Math.min(1, (e.clientX / innerWidth - .5) * 2)), Math.max(-1, Math.min(1, (e.clientY / innerHeight - .1) * 1.4))), { passive: true });
+
+/* ── тосты ── */
+let toastT = 0, queue = [], open = false, toasting = false;
+function toast(d) {
+  if (open || toasting) { queue.push(d); return; }
+  toasting = true; document.body.classList.add("busy");
+  $("tIcon").textContent = d.icon; $("tTitle").textContent = d.title; $("tSub").textContent = d.sub || "";
+  isl.style.setProperty("--tc", d.color || "#a78bfa"); mood(d.mood);
+  const pr = $("tProg"); pr.style.transition = "none"; pr.style.transform = "scaleX(1)"; void pr.offsetWidth; pr.style.transition = "transform " + (d.ms || 4500) + "ms linear"; pr.style.transform = "scaleX(0)";
+  isl.classList.add("toast");
+  if (d.snd && SND[d.snd]) SND[d.snd]();
+  if (d.vib) { vib(d.vib); isl.classList.add("buzz"); setTimeout(() => isl.classList.remove("buzz"), 600); }
+  clearTimeout(toastT); toastT = setTimeout(endToast, d.ms || 4500);
+}
+function endToast() { isl.classList.remove("toast"); toasting = false; mood("neutral"); if (!open) document.body.classList.remove("busy"); setTimeout(next, 500); }
+function next() { if (!open && !toasting && queue.length) toast(queue.shift()); }
+
+/* ── раскрытие ── */
+let tab = "hw", due = "today";
+function openIsl() { if (open) return; audio(); open = true; clearTimeout(toastT); isl.classList.remove("toast"); toasting = false; isl.classList.add("open"); document.body.classList.add("busy"); SND.pop(); mood("happy"); render(); }
+function closeIsl() { if (!open) return; open = false; isl.classList.remove("open"); mood("neutral"); document.body.classList.remove("busy"); setTimeout(next, 600); }
+window.__back = () => { if (open) { closeIsl(); return true; } return false; };
+isl.addEventListener("click", e => { if (!open) openIsl(); });
+$("closeBtn").addEventListener("click", e => { e.stopPropagation(); closeIsl(); });
+$("tabHw").addEventListener("click", () => { tab = "hw"; SND.tick(); render(); });
+$("tabSet").addEventListener("click", () => { tab = "set"; SND.tick(); render(); });
+
+/* ── экран ── */
+const colorOf = s => { let h = 0; for (const c of s.toLowerCase()) h = (h * 31 + c.charCodeAt(0)) >>> 0; return `hsl(${h % 360} 75% 65%)`; };
+function el(tag, cls, txt) { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
+function render() {
+  $("tabHw").classList.toggle("on", tab === "hw"); $("tabSet").classList.toggle("on", tab === "set");
+  const b = $("body"), keep = b.scrollTop; b.textContent = "";
+  if (tab === "hw") renderHw(b); else renderSet(b);
+  b.scrollTop = keep;
+  const n = dueNow().length;
+  $("pTitle").textContent = tab === "hw" ? "Домашка" : "Настройки";
+  $("pSub").textContent = tab === "hw" ? (n ? "На сегодня и просрочено: " + n : "На сегодня ничего, отдыхай") : "Звук, вибро, перерывы, стиль";
+}
+function renderHw(b) {
+  const f = el("div", "form"), subj = el("input"), task = el("input");
+  subj.type = "text"; subj.placeholder = "Предмет (например, Русский)"; subj.maxLength = 30; task.type = "text"; task.placeholder = "Что задали (например, стр. 34)"; task.maxLength = 120;
+  const chips = el("div", "chips"), dt = el("input"); dt.type = "date"; dt.value = addDays(due === "tomorrow" ? 1 : 0);
+  [["today", "Сегодня"], ["tomorrow", "Завтра"]].forEach(([k, t]) => { const c = el("button", due === k ? "on" : "", t); c.addEventListener("click", () => { due = k; dt.value = addDays(k === "today" ? 0 : 1); [...chips.children].forEach(x => x.classList.toggle("on", x === c)); SND.tick(); }); chips.appendChild(c); });
+  const add = el("button", "add", "Записать");
+  add.addEventListener("click", () => {
+    const s = subj.value.trim(), t = task.value.trim(); if (!s && !t) { subj.focus(); return; }
+    S.hw.push({ id: Date.now(), subj: s || "Задание", task: t, due: dt.value || addDays(0), done: false }); save(); SND.done(); mood("love"); setTimeout(() => mood(open ? "happy" : "neutral"), 1200); render();
+  });
+  f.append(subj, task, chips, dt, add); b.appendChild(f);
+  const act = S.hw.filter(h => !h.done).sort((a, c) => a.due.localeCompare(c.due)), done = S.hw.filter(h => h.done);
+  if (!S.hw.length) b.appendChild(el("div", "empty", "Пока пусто. Запиши первое задание, а остров напомнит о нём."));
+  if (act.length) { b.appendChild(el("div", "sec", "Нужно сделать")); act.forEach(h => b.appendChild(card(h))); }
+  if (done.length) { b.appendChild(el("div", "sec", "Готово")); done.forEach(h => b.appendChild(card(h))); }
+}
+function card(h) {
+  const r = el("div", "hw" + (h.done ? " done" : "")), d = el("div", "dot"); d.style.background = colorOf(h.subj);
+  const m = el("div", "m"), bs = el("b", "", h.subj); bs.style.color = colorOf(h.subj); m.append(bs, el("span", "", h.task || "без описания"));
+  const [lab, cl] = dueInfo(h.due), w = el("div", "when " + cl, lab);
+  const ok = el("button", "ok", h.done ? "↺" : "✓"), del = el("button", "del", "✕");
+  ok.addEventListener("click", () => { h.done = !h.done; save(); if (h.done) { SND.done(); mood("happy"); setTimeout(() => mood("happy"), 0); } render(); });
+  del.addEventListener("click", () => { S.hw = S.hw.filter(x => x.id !== h.id); save(); SND.tick(); render(); });
+  r.append(d, m, w, ok, del); return r;
+}
+function sw(on, cb) { const s = el("button", "sw" + (on ? " on" : "")); s.addEventListener("click", () => { const v = !s.classList.contains("on"); s.classList.toggle("on", v); cb(v); SND.tick(); }); return s; }
+function row(title, sub, ctl) { const r = el("div", "row"), l = el("div", "l"); l.append(el("b", "", title), el("span", "", sub)); r.append(l, ctl); return r; }
+function renderSet(b) {
+  b.appendChild(el("div", "sec", "Звук и вибрация"));
+  b.appendChild(row("Звуки", "Мягкие сигналы острова", sw(S.set.sound, v => { S.set.sound = v; save(); })));
+  b.appendChild(row("Вибрация", "Гудит, когда пора отдохнуть", sw(S.set.vibro, v => { S.set.vibro = v; save(); })));
+  const t = el("div", "test"), t1 = el("button", "", "Проверить звук"), t2 = el("button", "", "Проверить вибро");
+  t1.addEventListener("click", () => { audio(); const s = S.set.sound; S.set.sound = true; SND.ding(); S.set.sound = s; }); t2.addEventListener("click", () => { const v = S.set.vibro; S.set.vibro = true; vib(BUZZ); S.set.vibro = v; });
+  t.append(t1, t2); b.appendChild(t);
+  b.appendChild(el("div", "sec", "Напоминания"));
+  const n = el("input"); n.type = "number"; n.min = 1; n.max = 240; n.value = S.set.breakMin; n.addEventListener("change", () => { S.set.breakMin = Math.max(1, Math.min(240, +n.value || 45)); n.value = S.set.breakMin; save(); });
+  b.appendChild(row("Перерыв через, мин", "Сколько сидишь с открытым Островком", n));
+  b.appendChild(row("ДЗ раз в час", "Только если есть на сегодня", sw(S.set.hourly, v => { S.set.hourly = v; save(); })));
+  const test = el("div", "test"), t3 = el("button", "", "Показать перерыв"), t4 = el("button", "", "Показать ДЗ");
+  t3.addEventListener("click", () => { closeIsl(); setTimeout(breakNow, 700); }); t4.addEventListener("click", () => { closeIsl(); setTimeout(() => hwNow(true), 700); });
+  test.append(t3, t4); b.appendChild(test);
+  b.appendChild(el("div", "sec", "Стиль острова"));
+  const g = el("div", "st");
+  [["pill", "Пилюля"], ["notch", "Чёлка"], ["rounded", "Скруглён."], ["glass", "Стекло"], ["neon", "Неон"]].forEach(([k, t]) => {
+    const c = el("button", S.set.style === k ? "on" : ""), i = el("i", k); c.append(i, document.createTextNode(t));
+    c.addEventListener("click", () => { S.set.style = k; save(); applyStyle(); SND.pop(); render(); }); g.appendChild(c);
+  });
+  b.appendChild(g);
+  b.appendChild(el("div", "empty", "Напоминания работают, пока приложение открыто на экране."));
+}
+function applyStyle() { isl.className = isl.className.replace(/\bs-\w+/g, "").trim(); isl.classList.add("s-" + S.set.style); }
+
+/* ── напоминания ── */
+let active = 0, lastTick = Date.now();
+function breakNow() { toast({ icon: "👀", color: "#a78bfa", title: "Пора сделать перерыв", sub: "Посмотри вдаль, встань, потянись, попей воды", mood: "sleepy", snd: "buzz", vib: BUZZ, ms: 7000 }); }
+function hwNow(force) {
+  const d = dueNow();
+  if (!d.length) { if (force) toast({ icon: "🎉", color: "#4ade80", title: "На сегодня заданий нет", sub: "Можно отдыхать", mood: "happy", snd: "ding" }); return; }
+  const first = d[0], more = d.length > 1 ? " и ещё " + (d.length - 1) : "";
+  toast({ icon: "📚", color: "#38bdf8", title: "Есть задание на сегодня", sub: first.subj + (first.task ? ": " + first.task : "") + more, mood: "wow", snd: "hw", vib: [0, 120, 80, 120], ms: 6500 });
+  S.lastHw = Date.now(); save();
+}
+setInterval(() => {
+  const n = new Date(); $("clock").textContent = pad(n.getHours()) + ":" + pad(n.getMinutes());
+  const t = Date.now(), dt = t - lastTick; lastTick = t;
+  if (document.hidden || dt > 5000) { if (dt > 10 * 60 * 1000) active = 0; return; }
+  active += dt;
+  if (active >= S.set.breakMin * 60 * 1000) { active = 0; breakNow(); }
+  else if (S.set.hourly && t - S.lastHw >= 60 * 60 * 1000 && dueNow().length) hwNow(false);
+}, 1000);
+
+/* ── старт ── */
+applyStyle(); mood("neutral");
+{ const n = new Date(); $("clock").textContent = pad(n.getHours()) + ":" + pad(n.getMinutes()); }
+setTimeout(() => { const d = dueNow(); if (d.length) hwNow(false); else if (!S.hw.length) toast({ icon: "👋", color: "#ffd34d", title: "Привет, я Островок", sub: "Нажми на меня, чтобы записать домашку", mood: "happy", snd: null, ms: 4000 }); }, 900);
+addEventListener("pointerdown", () => audio(), { once: true });
+</script>
+</body>
+</html>
