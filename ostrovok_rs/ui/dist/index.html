@@ -83,6 +83,17 @@
         <div class="card"><h3>Отсчёт</h3><div class="exam" id="exam">Добавь ЕГЭ в настройках</div></div>
       </section>
 
+      <section class="pg" data-title="Таймер" data-h="300" data-tc="#22d3ee">
+        <div class="tm">
+          <div class="ring" id="tmRing"><svg viewBox="0 0 150 150"><defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs><circle class="bg" cx="75" cy="75" r="66"/><circle class="fg" id="tmFg" cx="75" cy="75" r="66" stroke-dasharray="414.7" stroke-dashoffset="0"/></svg><div class="big" id="tmBig">10:00</div></div>
+          <div class="tmr">
+            <div class="presets"><button class="btn" data-m="5">5</button><button class="btn on" data-m="10">10</button><button class="btn" data-m="25">25</button><button class="btn" data-m="45">45</button></div>
+            <div class="addrow"><input class="inp" id="tmIn" placeholder="свои минуты" maxlength="3" inputmode="numeric"><button class="btn main" id="tmGo">Старт</button><button class="btn" id="tmReset">Сброс</button></div>
+            <small class="hint">Когда время выйдет, я скажу и позвеню</small>
+          </div>
+        </div>
+      </section>
+
     </div>
   </div>
 </div>

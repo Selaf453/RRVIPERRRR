@@ -165,3 +165,35 @@ function renderClip() {
 document.querySelectorAll("[data-cl]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); clipTab = b.dataset.cl; document.querySelectorAll("[data-cl]").forEach(x => x.classList.toggle("on", x === b)); renderClip(); }));
 $("clClear").addEventListener("click", async e => { e.stopPropagation(); if (clipTab === "hist") clipHist = []; else { cfg.shelf = []; await T.invoke("set_cfg", { patch: { shelf: [] } }); } renderClip(); });
 if (!IN_TAURI) { clipHist = [{ t: "https://github.com/", at: Date.now() - 4e5 }, { t: "Встречаемся в 19:00 у входа в парк", at: Date.now() - 9e5 }, { t: "cargo build --release -p ostrovok", at: Date.now() - 18e5 }]; }
+
+/* ── таймер ── */
+const CIRC = 414.7; let tm = { total: 600, left: 600, end: 0, run: false };
+function paintTimer() {
+  const left = tm.run ? Math.max(0, Math.ceil((tm.end - Date.now()) / 1000)) : tm.left;
+  $("tmBig").textContent = fmt(left); $("tmFg").style.strokeDashoffset = CIRC * (1 - (tm.total ? left / tm.total : 0)); $("tmRing").classList.toggle("run", tm.run); $("tmGo").textContent = tm.run ? "Пауза" : (tm.left < tm.total ? "Дальше" : "Старт");
+  if (tm.run && left <= 0) { tm.run = false; tm.left = tm.total; paintTimer(); toast({ icon: "⏰", color: "#22d3ee", title: "Таймер сработал", sub: Math.round(tm.total / 60) + " мин прошло", mood: "excited", snd: "ding", ms: 7000 }); fx("⏰✨", 6); }
+}
+function setTimerMin(m) { tm = { total: m * 60, left: m * 60, end: 0, run: false }; document.querySelectorAll(".presets .btn").forEach(b => b.classList.toggle("on", +b.dataset.m === m)); paintTimer(); }
+document.querySelectorAll(".presets .btn").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); setTimerMin(+b.dataset.m); Snd.play("tick"); }));
+$("tmGo").addEventListener("click", e => { e.stopPropagation(); const v = parseInt($("tmIn").value); if (v > 0 && !tm.run && tm.left === tm.total) { setTimerMin(Math.min(v, 600)); $("tmIn").value = ""; }
+  if (tm.run) { tm.left = Math.max(0, Math.ceil((tm.end - Date.now()) / 1000)); tm.run = false; } else { tm.end = Date.now() + tm.left * 1000; tm.run = true; Snd.play("pop"); } paintTimer(); });
+$("tmReset").addEventListener("click", e => { e.stopPropagation(); tm.run = false; tm.left = tm.total; paintTimer(); });
+$("tmIn").addEventListener("keydown", e => { e.stopPropagation(); if (e.key === "Enter") $("tmGo").click(); });
+setInterval(paintTimer, 500); paintTimer();
+/* таймер идёт в фоне: в закрытом острове показываем в чипе */
+
+/* ── остров тянется к курсору ── */
+let tx = 1, ty = 1, cx = 1, cy = 1, curX = -999, curY = -999;
+function nearCursor(x, y) { curX = x; curY = y; }
+window.addEventListener("pointermove", e => nearCursor(e.clientX, e.clientY), { passive: true });
+T.listen("cur", c => nearCursor(c.x, c.y));
+(function loop() {
+  if (!open && !toasting) {
+    const r = isl.getBoundingClientRect(), dx = Math.max(r.left - curX, 0, curX - r.right), dy = Math.max(r.top - curY, 0, curY - r.bottom), d = Math.hypot(dx, dy), k = Math.max(0, 1 - d / 130);
+    const inside = d === 0 ? 1 : k;
+    tx = 1 + .06 * inside * inside * (3 - 2 * inside) * .9 + .0; ty = 1 + .13 * inside;
+  } else { tx = 1; ty = 1; }
+  cx += (tx - cx) * .14; cy += (ty - cy) * .14;
+  isl.style.setProperty("--sx", cx.toFixed(4)); isl.style.setProperty("--sy", cy.toFixed(4));
+  requestAnimationFrame(loop);
+})();
