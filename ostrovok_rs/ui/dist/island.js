@@ -90,7 +90,7 @@ async function openIsl() {
   if (open) return; wakeUp(true); open = true; clearTimeout(toastT); clearTimeout(sayT); clearInterval(typeT); toasting = false; speaking = false; setState(); Snd.play("pop"); setMood("happy"); fx("✨", 4);
   const h = new Date().getHours(); $("pHi").textContent = (cfg.user_name ? cfg.user_name + ", " : "") + (h < 5 ? "доброй ночи" : h < 12 ? "доброе утро" : h < 18 ? "добрый день" : "добрый вечер");
   $("pDate").textContent = new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" });
-  refreshHw(); refreshExam(); paintFocus(); paintStudy();
+  refreshHw(); refreshExam(); paintFocus(); paintStudy(); if (window.panelOpen) panelOpen();
 }
 function closeIsl() { if (!open) return; open = false; setState(); setMood("neutral"); setTimeout(() => { if (!toasting && queue.length) toast(queue.shift()); }, 500); }
 isl.addEventListener("click", e => { if (!open && !e.target.closest("button")) openIsl(); });
@@ -135,18 +135,7 @@ function newDance() {
 }
 
 /* ── домашка, отсчёт ── */
-async function refreshHw() {
-  const items = (await T.invoke("hw_view") || []).filter(h => !h.done).sort((a, b) => (a.due || "9").localeCompare(b.due || "9"));
-  const box = $("hwList"); box.textContent = "";
-  if (!items.length) { box.appendChild(el("div", "dim", "Ничего не задано, отдыхай")); return; }
-  items.slice(0, 4).forEach(h => {
-    const r = el("div", "hwrow"), d = el("i", "d"); d.style.background = h.color;
-    const b = el("b", "", h.subject || "Задание"); b.style.color = h.color;
-    const lab = el("span", "pill " + (h.label === "просрочено" ? "late" : h.label === "сегодня" ? "today" : ""), h.label || "");
-    r.append(d, b, el("span", "tx", h.body)); if (h.label) r.append(lab); box.appendChild(r);
-  });
-  if (items.length > 4) box.appendChild(el("div", "dim", "…и ещё " + (items.length - 4)));
-}
+function refreshHw() { if (window.panelHw) panelHw(); }
 T.listen("hw", refreshHw);
 async function refreshExam() { const e = await T.invoke("exam_info"); $("exam").textContent = ""; if (!e) { $("exam").textContent = "Добавь ЕГЭ в настройках"; return; } $("exam").append(e.text); }
 
@@ -200,13 +189,13 @@ T.listen("study", s => {
 });
 setInterval(() => { if (study) setState(); }, 1000);
 setInterval(() => { if (study && !quiet() && chatty() > 0 && Math.random() < .25) say(pickPh("study"), "focus", 3.5); }, 5 * 60 * 1000);
-function paintStudy() { $("bStudy").textContent = study ? "Стоп учёбу" : "Учёба"; $("bStudy").classList.toggle("on", !!study); }
+function paintStudy() { $("bStudyT").textContent = study ? "Стоп учёбу" : "Учёба"; $("bStudy").classList.toggle("on", !!study); }
 $("bStudy").addEventListener("click", e => { e.stopPropagation(); T.invoke(study ? "study_stop" : "study_start"); });
 
 /* ── фокус и заметки ── */
 function paintFocus() {
   const on = focusUntil > Date.now(); $("bFocusX").style.display = on ? "" : "none";
-  $("bFocus").textContent = on ? "Фокус: " + Math.ceil((focusUntil - Date.now()) / 60000) + " мин" : "Фокус " + (cfg.focus_min || 45) + " мин"; $("bFocus").classList.toggle("on", on);
+  $("bFocusT").textContent = on ? "Фокус: " + Math.ceil((focusUntil - Date.now()) / 60000) + " мин" : "Фокус " + (cfg.focus_min || 45) + " мин"; $("bFocus").classList.toggle("on", on);
 }
 setInterval(paintFocus, 5000);
 $("bFocus").addEventListener("click", async e => { e.stopPropagation(); if (focusUntil > Date.now()) return; await T.invoke("focus_start", { minutes: cfg.focus_min || 45 }); });
@@ -218,14 +207,9 @@ T.listen("focus", f => {
     if (f.done) toast({ icon: "✅", color: "#4ade80", title: "Фокус закончился", sub: n ? "Пока тебя не трогали: " + f.missed.slice(0, 3).join(", ") + (n > 3 ? " и ещё " + (n - 3) : "") : "Пока ты работал, ничего важного не было", mood: "proud", snd: "ding", ms: 6500 });
   }
 });
-$("noteIn").addEventListener("keydown", async e => {
-  e.stopPropagation(); if (e.key !== "Enter") return; const t = e.target.value.trim(); if (!t) return;
-  const notes = [...(cfg.notes || []), { t, d: new Date().toISOString().slice(0, 10) }]; cfg.notes = notes; await T.invoke("set_cfg", { patch: { notes } });
-  e.target.value = ""; Snd.play("done"); setMood("love"); fx("💗", 4); setTimeout(() => setMood("happy"), 1200);
-});
 T.listen("hotkey", async n => {
   if (n === "expand") { open ? closeIsl() : openIsl(); }
-  if (n === "note") { await openIsl(); setTimeout(() => $("noteIn").focus(), 500); }
+  if (n === "note") { await openIsl(); panelGo(3); setTimeout(() => $("noteIn").focus(), 600); }
   if (n === "focus") { if (focusUntil > Date.now()) T.invoke("focus_cancel"); else T.invoke("focus_start", { minutes: cfg.focus_min || 45 }); }
   if (n === "study") T.invoke(study ? "study_stop" : "study_start");
 });

@@ -210,6 +210,12 @@ fn diary_delete(sh: S, date: String) -> Result<(), String> { need_diary(&sh)?; d
 #[tauri::command]
 fn say_text(sh: S, text: String) { if sh.get_bool("speak") { platform::speak(&text.chars().take(200).collect::<String>()); } }
 #[tauri::command]
+fn media_cmd(cmd: String) { platform::media(&cmd); }
+#[tauri::command]
+fn clip_get() -> Option<String> { arboard::Clipboard::new().ok()?.get_text().ok().filter(|t| !t.trim().is_empty() && t.len() < 5000) }
+#[tauri::command]
+fn clip_set(text: String) { if let Ok(mut c) = arboard::Clipboard::new() { let _ = c.set_text(text); } }
+#[tauri::command]
 fn preview_mood(app: AppHandle, mood: String) { let _ = app.emit("preview", mood); }
 #[tauri::command]
 fn open_diary(app: AppHandle) { show_window(&app, "diary", "diary.html", "Личный дневник: Островок", 1000.0, 680.0); }
@@ -609,7 +615,7 @@ fn main() {
             get_cfg, app_ver, set_cfg, autostart_set, hw_add, hw_toggle, hw_delete, hw_clear_done, hw_view,
             tg_connect, tg_unlink, focus_start, focus_cancel, exam_info, set_rects, open_settings, quit_app,
             diary_state, diary_auth, diary_lock, diary_list, diary_get, diary_save, diary_delete, open_diary, say_text, preview_mood,
-            study_start, study_stop, study_state, launch_gaming
+            study_start, study_stop, study_state, launch_gaming, media_cmd, clip_get, clip_set
         ])
         .setup(move |app| {
             let h = app.handle().clone();

@@ -8,21 +8,81 @@
   <div class="zz">z Z</div>
   <div class="layer toastc"><div class="ti" id="tIcon">🔔</div><div class="tt"><b id="tTitle"></b><span id="tSub"></span></div><div class="eyes" id="eToast"><i></i><i></i></div><div class="tprog" id="tProg"></div></div>
   <div class="layer panel" id="panel">
-    <div class="ph"><div class="eyes big" id="eBig"><i></i><i></i></div><div class="g"><h1 id="pHi">Привет!</h1><p id="pDate"></p></div><button class="btn" id="bDiary">Дневник</button><button class="btn" id="bGame">Игры</button><button class="btn" id="bSet">Настройки</button><button class="btn" id="bClose">✕</button></div>
-    <div class="grid">
-      <div style="display:flex;flex-direction:column;gap:10px;min-height:0">
-        <div class="card"><h3>Музыка</h3><div class="nowp"><div class="art">♪</div><div style="min-width:0"><b id="mTitle">Ничего не играет</b><span id="mArt">Включи трек, я услышу</span></div></div></div>
-        <div class="card" style="flex:1"><h3>Домашка</h3><div id="hwList"></div></div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;min-height:0">
-        <div class="card"><h3>Компьютер</h3>
+    <div class="pglow" id="pglow"></div>
+    <div class="pbar">
+      <div class="dots" id="dots"></div>
+      <div class="ptitle" id="pTitle"></div>
+      <div class="eyes sm" id="eBig"><i></i><i></i></div>
+      <span class="pclock" id="pClock"></span>
+      <button class="ib" id="bSet" title="Настройки" data-ic="gear"></button>
+      <button class="ib" id="bClose" title="Свернуть" data-ic="up"></button>
+    </div>
+    <div class="pages" id="pages">
+
+      <section class="pg" data-title="Главная" data-h="318" data-tc="#ff8a3d">
+        <div class="hello"><b id="pHi">Привет!</b><span id="pDate"></span></div>
+        <div class="qa3">
+          <button class="qa" id="bStudy"><i class="qi" style="--c:#3b82f6" data-ic="cap"></i><span id="bStudyT">Учёба</span></button>
+          <button class="qa" id="bFocus"><i class="qi" style="--c:#8b5cf6" data-ic="target"></i><span id="bFocusT">Фокус</span></button>
+          <button class="qa" id="bFocusX" style="display:none"><i class="qi" style="--c:#ef4444" data-ic="up"></i><span>Стоп</span></button>
+          <button class="qa" data-go="3"><i class="qi" style="--c:#f59e0b" data-ic="note"></i><span>Заметка</span></button>
+        </div>
+        <div class="qa5">
+          <button class="rq" id="bDiary"><i style="--c:#22c55e" data-ic="book"></i><span>Дневник</span></button>
+          <button class="rq" id="bGame"><i style="--c:#f43f5e" data-ic="pad"></i><span>Игры</span></button>
+          <button class="rq" data-go="2"><i style="--c:#38bdf8" data-ic="check"></i><span>Дела</span></button>
+          <button class="rq" data-go="5"><i style="--c:#a78bfa" data-ic="clip"></i><span>Буфер</span></button>
+          <button class="rq" data-go="4"><i style="--c:#fb923c" data-ic="cal"></i><span>Календарь</span></button>
+        </div>
+        <div class="row-cards">
+          <div class="card mcard" data-go="1"><div class="art sm" id="artH">♪</div><div class="mt"><b id="mTitle">Ничего не играет</b><span id="mArt">Включи трек, я услышу</span></div><button class="ib sq" id="bPlayH" data-ic="play"></button></div>
+          <div class="card wcard"><i class="sunI" data-ic="sun"></i><div><b id="wTemp">—</b><span id="wDesc">погода</span></div></div>
+        </div>
+      </section>
+
+      <section class="pg" data-title="Музыка" data-h="292" data-tc="#a78bfa">
+        <div class="mus">
+          <div class="art big" id="artM">♪</div>
+          <div class="mi">
+            <b id="mTitle2">Ничего не играет</b><span id="mArt2">Включи трек, я услышу</span>
+            <div class="lyr" id="mLyr"></div>
+            <div class="prog"><i id="mProg"></i></div>
+            <div class="ptimes"><span id="mPos">0:00</span><span id="mDur">0:00</span></div>
+            <div class="ctl"><button class="ib" id="bPrev" data-ic="prev"></button><button class="ib play" id="bPlay" data-ic="play"></button><button class="ib" id="bNext" data-ic="next"></button></div>
+          </div>
+          <div class="eq big"><b></b><b></b><b></b><b></b><b></b></div>
+        </div>
+      </section>
+
+      <section class="pg" data-title="Домашка" data-h="336" data-tc="#38bdf8">
+        <div class="card scroll" id="hwList"></div>
+        <div class="addrow"><input class="inp" id="hwIn" placeholder="Например: алгебра №12 на завтра" maxlength="200"><button class="btn main" id="hwAdd">Добавить</button></div>
+      </section>
+
+      <section class="pg" data-title="Заметки" data-h="318" data-tc="#f59e0b">
+        <div class="card scroll" id="noteList"></div>
+        <div class="addrow"><input class="inp" id="noteIn" placeholder="Заметка, Enter чтобы сохранить" maxlength="200"><button class="btn main" id="noteAdd">Добавить</button></div>
+      </section>
+
+      <section class="pg" data-title="Календарь" data-h="366" data-tc="#fb923c">
+        <div class="card"><h3>Ближайшее</h3><div class="scroll" id="calList"></div></div>
+        <div class="card"><h3>Напомнить</h3>
+          <div class="addrow"><input class="inp" id="remT" placeholder="О чём напомнить" maxlength="100"><input class="inp sm" id="remW" placeholder="18:30"><button class="btn main" id="remAdd">Добавить</button></div>
+          <small class="hint">Время: 18:30, завтра 9:00, через 20 мин, 25.11 14:00</small></div>
+      </section>
+
+      <section class="pg" data-title="Буфер" data-h="322" data-tc="#a78bfa">
+        <div class="seg"><button class="on" data-cl="hist">История</button><button data-cl="shelf">Полка</button><span class="sp"></span><button class="lnk" id="clClear">Очистить</button></div>
+        <div class="scroll" id="clList"></div>
+      </section>
+
+      <section class="pg" data-title="Компьютер" data-h="286" data-tc="#22c55e">
+        <div class="card"><h3>Нагрузка</h3>
           <div class="stat"><span class="k">CPU</span><div class="bar2"><i id="bCpu" style="width:0;background:#38bdf8"></i></div><span class="v" id="vCpu">—</span></div>
           <div class="stat" style="margin:0"><span class="k">RAM</span><div class="bar2"><i id="bRam" style="width:0;background:#a78bfa"></i></div><span class="v" id="vRam">—</span></div></div>
         <div class="card"><h3>Отсчёт</h3><div class="exam" id="exam">Добавь ЕГЭ в настройках</div></div>
-        <div class="card" style="flex:1"><h3>Фокус и заметка</h3>
-          <div class="row2"><button class="btn" id="bStudy">Учёба</button><button class="btn" id="bFocus">Фокус</button><button class="btn" id="bFocusX" style="display:none">Стоп</button></div>
-          <input class="noteIn" id="noteIn" placeholder="Заметка, Enter чтобы сохранить" maxlength="200"></div>
-      </div>
+      </section>
+
     </div>
   </div>
 </div>
@@ -31,4 +91,5 @@
 <script src="common.js"></script>
 <script src="mood.js"></script>
 <script src="island.js"></script>
+<script src="panel.js"></script>
 </body></html>

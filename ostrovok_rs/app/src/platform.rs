@@ -78,6 +78,18 @@ mod imp {
                      source: ses.SourceAppUserModelId().map(|s| s.to_string()).unwrap_or_default(), pos, dur })
     }
 
+    /// Управление плеером: prev / next / что угодно другое = пауза-плей.
+    pub fn media(cmd: &str) {
+        use windows::Media::Control::GlobalSystemMediaTransportControlsSessionManager as M;
+        let Some(mgr) = M::RequestAsync().ok().and_then(|a| a.get().ok()) else { return };
+        let Ok(ses) = mgr.GetCurrentSession() else { return };
+        let _ = match cmd {
+            "prev" => ses.TrySkipPreviousAsync().and_then(|a| a.get()),
+            "next" => ses.TrySkipNextAsync().and_then(|a| a.get()),
+            _ => ses.TryTogglePlayPauseAsync().and_then(|a| a.get()),
+        };
+    }
+
     use std::os::windows::process::CommandExt;
     const NO_WINDOW: u32 = 0x08000000;
     /// Озвучка через встроенный синтезатор Windows (русский голос, если установлен). Текст идёт через переменную окружения, а не в команде.
@@ -105,6 +117,7 @@ mod imp {
     pub fn battery() -> Option<(u8, bool)> { None }
     pub fn music() -> Option<Music> { None }
     pub fn speak(_t: &str) {}
+    pub fn media(_c: &str) {}
     pub fn open_url(_u: &str) -> bool { false }
     pub fn launch(_p: &str) -> bool { false }
 }
