@@ -1,0 +1,32 @@
+name: Build Ostrovok.exe (PC)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Тесты логики
+        working-directory: ostrovok_rs
+        run: cargo test -p ostrovok-core
+
+      - name: Сборка exe
+        working-directory: ostrovok_rs
+        run: cargo build --release -p ostrovok
+
+      - name: Переименовать
+        shell: pwsh
+        working-directory: ostrovok_rs
+        run: Copy-Item target/release/ostrovok.exe Ostrovok.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ostrovok-exe
+          path: ostrovok_rs/Ostrovok.exe

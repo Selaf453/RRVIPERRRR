@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Окна Островка",
+  "windows": ["island", "settings", "diary"],
+  "permissions": ["core:default"]
+}

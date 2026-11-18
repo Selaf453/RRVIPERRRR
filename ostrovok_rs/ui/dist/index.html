@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><title>Островок</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="mood.css"></head>
+<body>
+<div id="isl" class="s-pill">
+  <div class="layer idle"><span id="clock">--:--</span><div class="eyes" id="eIdle"><i></i><i></i></div><span id="weather"></span></div>
+  <div class="layer mini"><div class="eyes" id="eMini"><i></i><i></i></div><div class="t" id="miniT"></div><div class="eq"><b></b><b></b><b></b><b></b></div></div>
+  <div class="layer say"><div class="eyes" id="eSay"><i></i><i></i></div><span id="sayT"></span></div>
+  <div class="zz">z Z</div>
+  <div class="layer toastc"><div class="ti" id="tIcon">🔔</div><div class="tt"><b id="tTitle"></b><span id="tSub"></span></div><div class="eyes" id="eToast"><i></i><i></i></div><div class="tprog" id="tProg"></div></div>
+  <div class="layer panel" id="panel">
+    <div class="ph"><div class="eyes big" id="eBig"><i></i><i></i></div><div class="g"><h1 id="pHi">Привет!</h1><p id="pDate"></p></div><button class="btn" id="bDiary">Дневник</button><button class="btn" id="bGame">Игры</button><button class="btn" id="bSet">Настройки</button><button class="btn" id="bClose">✕</button></div>
+    <div class="grid">
+      <div style="display:flex;flex-direction:column;gap:10px;min-height:0">
+        <div class="card"><h3>Музыка</h3><div class="nowp"><div class="art">♪</div><div style="min-width:0"><b id="mTitle">Ничего не играет</b><span id="mArt">Включи трек, я услышу</span></div></div></div>
+        <div class="card" style="flex:1"><h3>Домашка</h3><div id="hwList"></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;min-height:0">
+        <div class="card"><h3>Компьютер</h3>
+          <div class="stat"><span class="k">CPU</span><div class="bar2"><i id="bCpu" style="width:0;background:#38bdf8"></i></div><span class="v" id="vCpu">—</span></div>
+          <div class="stat" style="margin:0"><span class="k">RAM</span><div class="bar2"><i id="bRam" style="width:0;background:#a78bfa"></i></div><span class="v" id="vRam">—</span></div></div>
+        <div class="card"><h3>Отсчёт</h3><div class="exam" id="exam">Добавь ЕГЭ в настройках</div></div>
+        <div class="card" style="flex:1"><h3>Фокус и заметка</h3>
+          <div class="row2"><button class="btn" id="bStudy">Учёба</button><button class="btn" id="bFocus">Фокус</button><button class="btn" id="bFocusX" style="display:none">Стоп</button></div>
+          <input class="noteIn" id="noteIn" placeholder="Заметка, Enter чтобы сохранить" maxlength="200"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="fx"></div>
+<div id="news"></div>
+<script src="common.js"></script>
+<script src="mood.js"></script>
+<script src="island.js"></script>
+</body></html>

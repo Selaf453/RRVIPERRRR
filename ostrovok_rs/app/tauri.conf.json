@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Ostrovok",
+  "version": "3.1.0",
+  "identifier": "ru.ostrovok.app",
+  "build": { "frontendDist": "../ui/dist" },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "island",
+        "url": "index.html",
+        "title": "Островок",
+        "width": 1280,
+        "height": 660,
+        "x": 0,
+        "y": 0,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "resizable": false,
+        "shadow": false,
+        "focus": false
+      }
+    ],
+    "security": { "csp": null }
+  },
+  "bundle": { "active": false, "icon": ["icons/icon.ico", "icons/icon.png"] }
+}
