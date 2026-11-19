@@ -210,6 +210,14 @@ fn diary_delete(sh: S, date: String) -> Result<(), String> { need_diary(&sh)?; d
 #[tauri::command]
 fn say_text(sh: S, text: String) { if sh.get_bool("speak") { platform::speak(&text.chars().take(200).collect::<String>()); } }
 #[tauri::command]
+async fn mouse_battery() -> serde_json::Value {
+    let r = tauri::async_runtime::spawn_blocking(platform::mouse_battery).await.unwrap_or_else(|e| Err(e.to_string()));
+    match r {
+        Ok(b) => serde_json::json!({ "ok": true, "percent": b.percent, "charging": b.charging, "mv": b.mv }),
+        Err(e) => { let _ = std::fs::write(config::config_dir().join("battery_diag.txt"), &e); serde_json::json!({ "ok": false, "err": e }) }
+    }
+}
+#[tauri::command]
 fn media_cmd(cmd: String) { platform::media(&cmd); }
 #[tauri::command]
 fn clip_get() -> Option<String> { arboard::Clipboard::new().ok()?.get_text().ok().filter(|t| !t.trim().is_empty() && t.len() < 5000) }
@@ -288,8 +296,12 @@ fn launch_gaming(app: AppHandle, sh: S) {
 fn show_settings(app: &AppHandle) { show_window(app, "settings", "settings.html", "Островок: настройки", 980.0, 700.0); }
 fn show_window(app: &AppHandle, label: &str, page: &str, title: &str, w: f64, h: f64) {
     if let Some(win) = app.get_webview_window(label) { let _ = win.show(); let _ = win.unminimize(); let _ = win.set_focus(); return; }
-    let _ = WebviewWindowBuilder::new(app, label, WebviewUrl::App(page.into()))
-        .title(title).inner_size(w, h).min_inner_size(760.0, 520.0).center().build();
+    // Окно строим в отдельном потоке: из обработчика команды на Windows оно зависает белым.
+    let (app, label, page, title) = (app.clone(), label.to_string(), page.to_string(), title.to_string());
+    thread::spawn(move || {
+        let _ = WebviewWindowBuilder::new(&app, &label, WebviewUrl::App(page.into()))
+            .title(title).inner_size(w, h).min_inner_size(760.0, 520.0).center().build();
+    });
 }
 
 // ───────── фоновые циклы ─────────
@@ -615,7 +627,7 @@ fn main() {
             get_cfg, app_ver, set_cfg, autostart_set, hw_add, hw_toggle, hw_delete, hw_clear_done, hw_view,
             tg_connect, tg_unlink, focus_start, focus_cancel, exam_info, set_rects, open_settings, quit_app,
             diary_state, diary_auth, diary_lock, diary_list, diary_get, diary_save, diary_delete, open_diary, say_text, preview_mood,
-            study_start, study_stop, study_state, launch_gaming, media_cmd, clip_get, clip_set
+            study_start, study_stop, study_state, launch_gaming, mouse_battery, media_cmd, clip_get, clip_set
         ])
         .setup(move |app| {
             let h = app.handle().clone();

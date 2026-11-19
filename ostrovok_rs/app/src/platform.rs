@@ -90,6 +90,31 @@ mod imp {
         };
     }
 
+    /// Заряд мышки ATK/VXE через 2.4G-донгл. Err содержит диагностику (какие HID-коллекции видны и что ответили).
+    pub fn mouse_battery() -> Result<ostrovok_core::devices::Battery, String> {
+        use ostrovok_core::devices::{hex, parse_power, power_request};
+        let api = hidapi::HidApi::new().map_err(|e| format!("HID недоступен: {e}"))?;
+        let mut cands: Vec<&hidapi::DeviceInfo> = api.device_list().filter(|d| (d.vendor_id() == 0x3554 || d.vendor_id() == 0x373B) && d.usage_page() >= 0xFF00).collect();
+        let mut log = String::new();
+        if cands.is_empty() { return Err("Донгл мышки (VID 3554/373B) не найден. Вставь его и пошевели мышкой.".into()); }
+        cands.sort_by_key(|d| !(d.usage_page() == 0xFF02 && d.usage() == 0x0002));
+        for d in cands {
+            let head = format!("{:04x}:{:04x} if{} up{:04x} u{:04x}", d.vendor_id(), d.product_id(), d.interface_number(), d.usage_page(), d.usage());
+            let dev = match d.open_device(&api) { Ok(x) => x, Err(e) => { log += &format!("{head}: не открылся ({e})\n"); continue } };
+            if let Err(e) = dev.write(&power_request()) { log += &format!("{head}: запись не прошла ({e})\n"); continue }
+            let t0 = std::time::Instant::now();
+            let mut buf = [0u8; 64];
+            while t0.elapsed().as_millis() < 900 {
+                match dev.read_timeout(&mut buf, 150) {
+                    Ok(n) if n > 0 => { if let Some(b) = parse_power(&buf[..n]) { return Ok(b); } log += &format!("{head}: чужой кадр {}\n", hex(&buf[..n.min(20)])); }
+                    Ok(_) => {}
+                    Err(e) => { log += &format!("{head}: чтение: {e}\n"); break }
+                }
+            }
+        }
+        Err(if log.is_empty() { "Мышка не ответила (спит? закрой ATK HUB и пошевели мышкой).".into() } else { log })
+    }
+
     use std::os::windows::process::CommandExt;
     const NO_WINDOW: u32 = 0x08000000;
     /// Озвучка через встроенный синтезатор Windows (русский голос, если установлен). Текст идёт через переменную окружения, а не в команде.
@@ -118,6 +143,7 @@ mod imp {
     pub fn music() -> Option<Music> { None }
     pub fn speak(_t: &str) {}
     pub fn media(_c: &str) {}
+    pub fn mouse_battery() -> Result<ostrovok_core::devices::Battery, String> { Err("только Windows".into()) }
     pub fn open_url(_u: &str) -> bool { false }
     pub fn launch(_p: &str) -> bool { false }
 }

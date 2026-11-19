@@ -23,7 +23,7 @@ const mock = (() => {
     exam_info: () => ({ name: "Контрольная по алгебре", text: "Контрольная по алгебре: 3 дня", days: 3 }),
     diary_state: () => ({ has_pwd: true, open: window.__dopen || false }), diary_auth: a => { if (a.pwd !== "123") return Promise.reject("Неверный пароль"); window.__dopen = true; },
     diary_list: () => ({ items: window.__de, streak: 4 }), diary_get: a => (window.__de.find(x => x.date === a.date) || { mood: "😊", highlight: "", text: "", energy: 2 }), diary_save: () => {}, diary_delete: () => {}, diary_lock: () => { window.__dopen = false; },
-    media_cmd: () => {}, clip_get: () => null, clip_set: () => {}, study_state: () => ({ on: false }), study_start: () => {}, study_stop: () => {}, launch_gaming: () => {}, open_diary: () => {}, say_text: () => {},
+    media_cmd: () => {}, mouse_battery: () => ({ ok: true, percent: 72, charging: false, mv: 3900 }), clip_get: () => null, clip_set: () => {}, study_state: () => ({ on: false }), study_start: () => {}, study_stop: () => {}, launch_gaming: () => {}, open_diary: () => {}, say_text: () => {},
     tg_connect: () => "ostrovok_bot", autostart_set: () => {}, set_rects: () => {}, focus_start: () => {}, focus_cancel: () => {}, open_settings: () => {}, tg_unlink: () => {}, quit_app: () => {} };
   return { cfg, invoke: (c, a) => Promise.resolve(handlers[c] ? handlers[c](a || {}) : null) };
 })();

@@ -23,6 +23,7 @@ arboard = { version = "3", default-features = false }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.58", features = ["Media_Control", "Foundation"] }
+hidapi = { version = "2", default-features = false, features = ["windows-native"] }
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

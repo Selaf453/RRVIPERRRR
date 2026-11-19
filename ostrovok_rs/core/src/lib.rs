@@ -1,6 +1,7 @@
 #![recursion_limit = "512"]
 //! Логика Островка без привязки к окну и к Windows: её можно проверять тестами.
 pub mod config;
+pub mod devices;
 pub mod diary;
 pub mod games;
 pub mod hw;

@@ -1,8 +1,10 @@
 /* ───────── глаза: 34 настроения ───────── */
-.eyes { --k:1; display:flex; gap:calc(7px*var(--k)); position:relative; transition:transform .12s; }
+/* круглые глаза как в Python: белый круг, большой зрачок и блик */
+.eyes { --k:1; display:flex; gap:calc(6px*var(--k)); position:relative; transition:transform .12s; }
 .eyes.big { --k:2; }
-.eyes i { --sx:1; --sy:1; display:grid; place-items:center; position:relative; width:calc(11px*var(--k)*var(--sx)); height:calc(15px*var(--k)*var(--sy)); background:var(--ec,#fff); border-radius:50%; animation:blink 4.2s infinite; transition:height .2s, width .2s; }
-.eyes i::after { content:""; position:absolute; width:calc(6px*var(--k)); height:calc(7px*var(--k)); background:var(--ink); border-radius:50%; left:calc(50% - 3px*var(--k) + var(--lx,0)*2px*var(--k)); top:calc(50% - 3.5px*var(--k) + var(--ly,0)*2px*var(--k)); }
+.eyes i { --sx:1; --sy:1; display:grid; place-items:center; position:relative; width:calc(15px*var(--k)*var(--sx)); height:calc(15px*var(--k)*var(--sy)); background:var(--ec,#fff); border-radius:50%; animation:blink 4.2s infinite; transition:height .2s, width .2s; }
+@property --lx { syntax:"<number>"; inherits:true; initial-value:0; } @property --ly { syntax:"<number>"; inherits:true; initial-value:0; }
+.eyes i::after { content:""; position:absolute; width:calc(8.4px*var(--k)); height:calc(8.4px*var(--k)); background:radial-gradient(circle at 32% 30%, #fff 0 17%, transparent 19%), #12121a; border-radius:50%; left:calc(50% - 4.2px*var(--k) + var(--lx,0)*3px*var(--k)); top:calc(50% - 4.2px*var(--k) + var(--ly,0)*3px*var(--k)); transition:left .12s, top .12s; }
 @keyframes blink { 0%,94%,100%{transform:scaleY(1)} 97%{transform:scaleY(.1)} }
 
 /* форма-дуга (закрытые глаза) и глифы вместо зрачков */
@@ -69,15 +71,15 @@
 #isl.a-zoom { animation:azoom .5s ease-out; } @keyframes azoom { 0%{transform:translateX(-50%) scale(.6)} 60%{transform:translateX(-50%) scale(1.1)} }
 #isl.d-bounce { animation:dbounce var(--beat,.47s) ease-in-out infinite; } @keyframes dbounce { 50%{transform:translateX(-50%) translateY(7px) scaleY(.95)} }
 #isl.d-sway { animation:dsway calc(var(--beat,.47s)*2) ease-in-out infinite; } @keyframes dsway { 0%,100%{transform:translateX(calc(-50% - 10px)) rotate(-1.5deg)} 50%{transform:translateX(calc(-50% + 10px)) rotate(1.5deg)} }
-#isl.d-jelly { animation:djelly var(--beat,.47s) ease-in-out infinite; } @keyframes djelly { 30%{transform:translateX(-50%) scale(1.1,.88)} 60%{transform:translateX(-50%) scale(.94,1.1)} }
-#isl.d-shake { animation:dshake .18s linear infinite; } @keyframes dshake { 0%,100%{transform:translateX(calc(-50% - 2px))} 50%{transform:translateX(calc(-50% + 2px))} }
-#isl.d-pulse { animation:dpulse var(--beat,.47s) ease-out infinite; } @keyframes dpulse { 0%{transform:translateX(-50%) scale(1.07)} 100%{transform:translateX(-50%) scale(1)} }
-#isl.d-roll { animation:droll calc(var(--beat,.47s)*4) ease-in-out infinite; } @keyframes droll { 0%,100%{transform:translateX(-50%) rotate(0)} 25%{transform:translateX(calc(-50% - 8px)) rotate(-2.5deg)} 75%{transform:translateX(calc(-50% + 8px)) rotate(2.5deg)} }
+#isl.d-jelly { animation:djelly var(--beat,.47s) ease-in-out infinite; } @keyframes djelly { 30%{transform:translateX(-50%) scale(1.02,.97)} 60%{transform:translateX(-50%) scale(.99,1.02)} }
+#isl.d-shake { animation:dbounce var(--beat,.47s) ease-in-out infinite; }
+#isl.d-pulse { animation:dpulse var(--beat,.47s) ease-out infinite; } @keyframes dpulse { 0%{transform:translateX(-50%) scale(1.02)} 100%{transform:translateX(-50%) scale(1)} }
+#isl.d-roll { animation:droll calc(var(--beat,.47s)*4) ease-in-out infinite; } @keyframes droll { 0%,100%{transform:translateX(-50%)} 25%{transform:translateX(calc(-50% - 3px))} 75%{transform:translateX(calc(-50% + 3px))} }
 
 /* реплики */
 .layer.say { display:flex; align-items:center; gap:12px; padding:0 16px; }
 #isl.speak { --w:min(520px,92vw); --h:52px; }
-#isl.speak .say { opacity:1; pointer-events:auto; } #isl.speak .idle, #isl.speak .mini { opacity:0; }
+#isl.speak .say { opacity:1; pointer-events:auto; } #isl.speak .idle, #isl.speak .mini { opacity:0 !important; }
 .say span { flex:1; min-width:0; font-size:15px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .say span.cur::after { content:"▌"; color:var(--accent); animation:cur .6s steps(2) infinite; } @keyframes cur { 50%{opacity:0} }
 #isl.zzz { --w:150px; --h:38px; } #isl.zzz .idle { opacity:1; }

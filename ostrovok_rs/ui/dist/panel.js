@@ -19,6 +19,7 @@ const IC = {
   trash: '<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>', x: '<path d="M18 6 6 18M6 6l12 12"/>',
   pin: '<path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3H7l3-3z"/>', bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  mouse: '<rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 2v7"/>', head: '<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="14" width="5" height="7" rx="2"/><rect x="17" y="14" width="5" height="7" rx="2"/>',
   tick: '<path d="m5 12 5 5L20 7"/>',
 };
 const svg = n => '<svg class="ic" viewBox="0 0 24 24">' + IC[n] + '</svg>';
@@ -34,7 +35,7 @@ function setTitle(t, first) {
   if (old) { old.className = "out"; setTimeout(() => old.remove(), 300); }
   titleEl = el("span", first ? "" : "in", t); box.appendChild(titleEl);
 }
-function panelGo(i, silent) {
+var panelGo = function (i, silent) {
   i = (i + pages.length) % pages.length; const first = titleEl === null;
   if (i === cur && !first) return;
   pages.forEach((p, k) => { p.classList.toggle("on", k === i); p.classList.toggle("left", k < i); });
@@ -44,7 +45,7 @@ function panelGo(i, silent) {
   setTitle(p.dataset.title, first);
   if (!silent && !first) Snd.play("tick");
   if (i === 2) panelHw(); if (i === 3) renderNotes(); if (i === 4) renderCal(); if (i === 5) renderClip(); if (i === 1) paintMusic();
-}
+};
 function panelOpen() { panelGo(0, true); $("pClock").textContent = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); }
 document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) { e.stopPropagation(); panelGo(+g.dataset.go); } });
 let wheelT = 0;
@@ -197,3 +198,22 @@ T.listen("cur", c => nearCursor(c.x, c.y));
   isl.style.setProperty("--sx", cx.toFixed(4)); isl.style.setProperty("--sy", cy.toFixed(4));
   requestAnimationFrame(loop);
 })();
+
+/* ── пока остров открыт, он живой: настроение под вкладку и иногда меняется ── */
+const PAGE_MOODS = [["happy", "joy", "wink", "proud"], ["joy", "love", "star", "cool"], ["focus", "think", "proud", "glasses"], ["love", "shy", "happy", "wink"], ["wink", "think", "excited", "happy"], ["glasses", "cool", "sly", "robot"], ["robot", "focus", "cat", "cool"], ["focus", "excited", "zen", "think"]];
+const MOVES = [null, "bob", "sway", "wave", "hop", "jelly"];
+function pageMood(first) { if (!open) return; const m = rnd(PAGE_MOODS[cur] || PAGE_MOODS[0]); setMood(m, rnd(MOVES)); if (!first && Math.random() < .5) fx(MOOD_FX[m] || "✨", 3); }
+const _go = panelGo; panelGo = function (i, silent) { const before = cur; _go(i, silent); if (cur !== before) pageMood(false); };
+setInterval(() => { if (open && Math.random() < .8) pageMood(false); }, 5500);
+
+
+/* ── заряд мышки (2.4G-донгл ATK/VXE) ── */
+let mouseLow = 101;
+async function pollMouse() {
+  if (cfg.mouse_battery === false) return; const r = await T.invoke("mouse_battery"); const v = $("vMouse"), b = $("bMouse");
+  if (!r || !r.ok) { v.className = "v err"; v.textContent = IN_TAURI ? "нет данных" : "—"; b.style.width = "0"; return; }
+  v.className = "v"; v.textContent = (r.charging ? "⚡ " : "") + r.percent + "%"; b.style.width = r.percent + "%"; b.style.background = r.percent <= 15 ? "#f87171" : r.percent <= 40 ? "#fbbf24" : "#4ade80";
+  if (!r.charging && r.percent <= 15 && r.percent < mouseLow - 4) { mouseLow = r.percent; toast({ icon: "🖱️", color: "#f87171", title: "Мышка разряжается: " + r.percent + "%", sub: "Пора заряжать", mood: "sad", snd: "ding", ms: 6000 }); }
+  if (r.charging || r.percent > 25) mouseLow = 101;
+}
+setTimeout(pollMouse, 6000); setInterval(pollMouse, 90000);

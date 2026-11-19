@@ -136,3 +136,5 @@ svg.ic { fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; s
 .ring .big { position:absolute; inset:0; display:grid; place-items:center; font-size:32px; font-weight:800; font-variant-numeric:tabular-nums; } .ring.run { animation:breath 2.4s ease-in-out infinite; } @keyframes breath { 50%{ transform:scale(1.04) } }
 .tmr { flex:1; display:flex; flex-direction:column; gap:12px; } .presets { display:flex; gap:8px; } .presets .btn { flex:1; padding:0; } .presets .btn.on { background:#fff; color:#0a0a0d; }
 .tmr .addrow .inp { text-align:center; }
+
+.dev { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; padding:5px 0; } .dev .di { flex:none; width:28px; height:28px; border-radius:50%; background:#ffffff12; display:grid; place-items:center; color:#c9ccdc; } .dev .di svg { width:15px; height:15px; } .dev .dn { width:150px; flex:none; white-space:nowrap; } .dev .bar2 { flex:1; height:9px; } .dev .v { width:64px; text-align:right; font-variant-numeric:tabular-nums; } .dev .v.err { color:#fca5a5; font-weight:600; font-size:11px; width:auto; }
