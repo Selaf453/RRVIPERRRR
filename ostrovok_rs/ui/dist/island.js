@@ -247,15 +247,19 @@ function showNews() {
   const n = $("news"); n.textContent = "";
   const h = el("div", "nh"); h.append(el("span", "nb", "NEW"), el("h2", "", "Островок " + VER)); n.append(h, el("div", "ns", "Большое обновление"));
   NEWS.forEach(([e, t, s]) => { const r = el("div", "ni"), x = el("div"); x.append(el("b", "", t), el("span", "", s)); r.append(el("div", "e", e), x); n.appendChild(r); });
+  const x = el("button", "nx", "✕"); x.title = "Закрыть"; h.appendChild(x);
   const b = el("button", "", "Хорошо, понятно"); n.appendChild(b); requestAnimationFrame(() => requestAnimationFrame(() => n.classList.add("in")));
-  b.addEventListener("click", () => dissolve(n));
+  const close = () => { window.removeEventListener("keydown", onKey); dissolve(n); };
+  const onKey = e => { if (e.key === "Escape") close(); };
+  window.addEventListener("keydown", onKey);
+  x.addEventListener("click", close); b.addEventListener("click", close);
 }
 function dissolve(n) {
   const r = n.getBoundingClientRect(), tr = isl.getBoundingClientRect(), tx = tr.left + tr.width / 2, ty = tr.top + tr.height / 2;
   const S = 34, cols = Math.ceil(r.width / S), rows = Math.ceil(r.height / S), tiles = [];
   Snd.play("whoosh");
   for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
-    const t = el("div", "tile"), inner = n.cloneNode(true); inner.removeAttribute("id"); inner.className = ""; inner.style.cssText = `position:absolute;left:${-x * S}px;top:${-y * S}px;width:${r.width}px;transform:none;opacity:1;right:auto;background:#12121a;border:0;border-radius:0;box-shadow:none`;
+    const t = el("div", "tile"), inner = n.cloneNode(true); inner.removeAttribute("id"); inner.className = ""; inner.querySelectorAll(".nx").forEach(q => q.remove()); inner.style.cssText = `position:absolute;left:${-x * S}px;top:${-y * S}px;width:${r.width}px;transform:none;opacity:1;right:auto;background:#12121a;border:0;border-radius:0;box-shadow:none`;
     t.style.cssText = `left:${r.left + x * S}px;top:${r.top + y * S}px;width:${S}px;height:${S}px`; const w = el("div"); w.style.cssText = "inset:0"; w.appendChild(inner); const gl = el("div", "gl"); t.append(w, gl); t._gl = gl; document.body.appendChild(t); tiles.push([t, x, y]);
   }
   n.style.visibility = "hidden"; n.classList.remove("in");

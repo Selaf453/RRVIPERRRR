@@ -56,6 +56,8 @@ body.dev { background:linear-gradient(160deg,#1a1d3d 0%,#3a2b5e 55%,#6a3f72 100%
 #news .nh { display:flex; align-items:center; gap:10px; padding:22px 24px 4px; } #news .nb { font-size:12px; font-weight:800; color:#1a1305; background:linear-gradient(90deg,#fde047,#f59e0b); border-radius:13px; padding:5px 12px; } #news .nh h2 { margin:0; font-size:22px; }
 #news .ns { padding:0 24px 8px; color:var(--dim); font-size:14px; }
 #news .ni { display:flex; align-items:center; gap:12px; margin:0 20px 8px; background:#ffffff0f; border-radius:14px; padding:9px 10px; } #news .ni .e { width:40px; height:40px; border-radius:12px; background:#ffd86630; display:grid; place-items:center; font-size:20px; flex:none; } #news .ni b { display:block; font-size:15px; } #news .ni span { font-size:12px; color:#a1a1aa; }
+#news .nx { position:absolute; right:14px; top:14px; width:auto; margin:0; min-height:0; padding:3px 10px; font-size:14px; line-height:1.2; color:#fff; background:#ffffff1f; border-radius:12px; } #news .nx:hover { background:#ffffff33; }
+#news { max-height:calc(100vh - 70px); overflow-y:auto; scrollbar-width:none; }
 #news button { display:block; width:calc(100% - 40px); margin:10px 20px 20px; min-height:46px; border:0; border-radius:16px; font:inherit; font-weight:800; font-size:17px; color:#14110a; background:linear-gradient(90deg,#fde047,#f59e0b); cursor:pointer; }
 .tile { position:fixed; overflow:hidden; pointer-events:none; z-index:50; will-change:transform,opacity; }
 .tile > div { position:absolute; }
